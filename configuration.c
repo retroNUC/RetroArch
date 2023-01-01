@@ -1947,6 +1947,10 @@ static struct config_bool_setting *populate_settings_bool(
    SETTING_BOOL("cheevos_badges_enable",        &settings->bools.cheevos_badges_enable, true, false, false);
    SETTING_BOOL("cheevos_start_active",         &settings->bools.cheevos_start_active, true, false, false);
    SETTING_BOOL("cheevos_appearance_padding_auto", &settings->bools.cheevos_appearance_padding_auto, true, DEFAULT_CHEEVOS_APPEARANCE_PADDING_AUTO, false);
+   SETTING_BOOL("cheevos_visibility_lbevents",  &settings->bools.cheevos_visibility_lbevents, true, DEFAULT_CHEEVOS_VISIBILITY_LBEVENTS, false);
+   SETTING_BOOL("cheevos_visibility_lbtracker", &settings->bools.cheevos_visibility_lbtracker, true, DEFAULT_CHEEVOS_VISIBILITY_LBTRACKER, false);
+   SETTING_BOOL("cheevos_visibility_unlock",    &settings->bools.cheevos_visibility_unlock, true, DEFAULT_CHEEVOS_VISIBILITY_UNLOCK, false);
+   SETTING_BOOL("cheevos_visibility_summary",   &settings->bools.cheevos_visibility_summary, true, DEFAULT_CHEEVOS_VISIBILITY_SUMMARY, false);
 #endif
 #ifdef HAVE_OVERLAY
    SETTING_BOOL("input_overlay_enable",         &settings->bools.input_overlay_enable, true, config_overlay_enable_default(), false);

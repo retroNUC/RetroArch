@@ -306,6 +306,7 @@ enum settings_list_type
    SETTINGS_LIST_PLAYLIST,
    SETTINGS_LIST_CHEEVOS,
    SETTINGS_LIST_CHEEVOS_APPEARANCE,
+   SETTINGS_LIST_CHEEVOS_VISIBILITY,
    SETTINGS_LIST_CORE_UPDATER,
    SETTINGS_LIST_NETPLAY,
    SETTINGS_LIST_LAKKA_SERVICES,
@@ -10110,6 +10111,14 @@ static bool setting_append_list(
                &group_info,
                &subgroup_info,
                parent_group);
+
+         CONFIG_ACTION(
+               list, list_info,
+               MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_SETTINGS,
+               MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_SETTINGS,
+               &group_info,
+               &subgroup_info,
+               parent_group);
 #endif
 
          CONFIG_ACTION(
@@ -19907,22 +19916,6 @@ static bool setting_append_list(
 
          CONFIG_BOOL(
                list, list_info,
-               &settings->bools.cheevos_challenge_indicators,
-               MENU_ENUM_LABEL_CHEEVOS_CHALLENGE_INDICATORS,
-               MENU_ENUM_LABEL_VALUE_CHEEVOS_CHALLENGE_INDICATORS,
-               true,
-               MENU_ENUM_LABEL_VALUE_OFF,
-               MENU_ENUM_LABEL_VALUE_ON,
-               &group_info,
-               &subgroup_info,
-               parent_group,
-               general_write_handler,
-               general_read_handler,
-               SD_FLAG_NONE
-               );
-
-         CONFIG_BOOL(
-               list, list_info,
                &settings->bools.cheevos_richpresence_enable,
                MENU_ENUM_LABEL_CHEEVOS_RICHPRESENCE_ENABLE,
                MENU_ENUM_LABEL_VALUE_CHEEVOS_RICHPRESENCE_ENABLE,
@@ -19973,22 +19966,6 @@ static bool setting_append_list(
                SD_FLAG_NONE
             );
 #endif
-
-         CONFIG_BOOL(
-               list, list_info,
-               &settings->bools.cheevos_verbose_enable,
-               MENU_ENUM_LABEL_CHEEVOS_VERBOSE_ENABLE,
-               MENU_ENUM_LABEL_VALUE_CHEEVOS_VERBOSE_ENABLE,
-               true,
-               MENU_ENUM_LABEL_VALUE_OFF,
-               MENU_ENUM_LABEL_VALUE_ON,
-               &group_info,
-               &subgroup_info,
-               parent_group,
-               general_write_handler,
-               general_read_handler,
-               SD_FLAG_ADVANCED
-               );
 
          CONFIG_BOOL(
                list, list_info,
@@ -20120,6 +20097,114 @@ static bool setting_append_list(
          );
          menu_settings_list_current_add_range(list, list_info, 0.0, 0.5, 0.01, true, true);
 #endif
+
+         END_SUB_GROUP(list, list_info, parent_group);
+         END_GROUP(list, list_info, parent_group);
+#endif
+         break;
+      case SETTINGS_LIST_CHEEVOS_VISIBILITY:
+#ifdef HAVE_CHEEVOS
+         START_GROUP(list, list_info, &group_info,
+            msg_hash_to_str(MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_SETTINGS),
+            parent_group);
+         parent_group = msg_hash_to_str(MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_SETTINGS);
+         START_SUB_GROUP(list, list_info, "State", &group_info, &subgroup_info, parent_group);
+
+         CONFIG_BOOL(
+            list, list_info,
+            &settings->bools.cheevos_challenge_indicators,
+            MENU_ENUM_LABEL_CHEEVOS_CHALLENGE_INDICATORS,
+            MENU_ENUM_LABEL_VALUE_CHEEVOS_CHALLENGE_INDICATORS,
+            true,
+            MENU_ENUM_LABEL_VALUE_OFF,
+            MENU_ENUM_LABEL_VALUE_ON,
+            &group_info,
+            &subgroup_info,
+            parent_group,
+            general_write_handler,
+            general_read_handler,
+            SD_FLAG_NONE
+         );
+
+         CONFIG_BOOL(
+            list, list_info,
+            &settings->bools.cheevos_visibility_lbevents,
+            MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBEVENTS,
+            MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBEVENTS,
+            true,
+            MENU_ENUM_LABEL_VALUE_OFF,
+            MENU_ENUM_LABEL_VALUE_ON,
+            &group_info,
+            &subgroup_info,
+            parent_group,
+            general_write_handler,
+            general_read_handler,
+            SD_FLAG_NONE
+         );
+
+         CONFIG_BOOL(
+            list, list_info,
+            &settings->bools.cheevos_visibility_lbtracker,
+            MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBTRACKER,
+            MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBTRACKER,
+            true,
+            MENU_ENUM_LABEL_VALUE_OFF,
+            MENU_ENUM_LABEL_VALUE_ON,
+            &group_info,
+            &subgroup_info,
+            parent_group,
+            general_write_handler,
+            general_read_handler,
+            SD_FLAG_NONE
+         );
+
+         CONFIG_BOOL(
+            list, list_info,
+            &settings->bools.cheevos_visibility_unlock,
+            MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_UNLOCK,
+            MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_UNLOCK,
+            true,
+            MENU_ENUM_LABEL_VALUE_OFF,
+            MENU_ENUM_LABEL_VALUE_ON,
+            &group_info,
+            &subgroup_info,
+            parent_group,
+            general_write_handler,
+            general_read_handler,
+            SD_FLAG_NONE
+         );
+
+         CONFIG_BOOL(
+            list, list_info,
+            &settings->bools.cheevos_visibility_summary,
+            MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_SUMMARY,
+            MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_SUMMARY,
+            true,
+            MENU_ENUM_LABEL_VALUE_OFF,
+            MENU_ENUM_LABEL_VALUE_ON,
+            &group_info,
+            &subgroup_info,
+            parent_group,
+            general_write_handler,
+            general_read_handler,
+            SD_FLAG_NONE
+         );
+
+         CONFIG_BOOL(
+            list, list_info,
+            &settings->bools.cheevos_verbose_enable,
+            MENU_ENUM_LABEL_CHEEVOS_VERBOSE_ENABLE,
+            MENU_ENUM_LABEL_VALUE_CHEEVOS_VERBOSE_ENABLE,
+            true,
+            MENU_ENUM_LABEL_VALUE_OFF,
+            MENU_ENUM_LABEL_VALUE_ON,
+            &group_info,
+            &subgroup_info,
+            parent_group,
+            general_write_handler,
+            general_read_handler,
+            SD_FLAG_ADVANCED
+         );
 
          END_SUB_GROUP(list, list_info, parent_group);
          END_GROUP(list, list_info, parent_group);
@@ -22163,6 +22248,7 @@ static rarch_setting_t *menu_setting_new_internal(rarch_setting_info_t *list_inf
       SETTINGS_LIST_PLAYLIST,
       SETTINGS_LIST_CHEEVOS,
       SETTINGS_LIST_CHEEVOS_APPEARANCE,
+      SETTINGS_LIST_CHEEVOS_VISIBILITY,
       SETTINGS_LIST_CORE_UPDATER,
       SETTINGS_LIST_NETPLAY,
       SETTINGS_LIST_LAKKA_SERVICES,
