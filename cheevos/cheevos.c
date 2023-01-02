@@ -796,30 +796,62 @@ static void rcheevos_deactivate_leaderboards(void)
    }
 }
 
-void rcheevos_leaderboards_enabled_changed(void)
+void rcheevos_leaderboards_settings_write(void)
 {
-   const settings_t* settings           = config_get_ptr();
-   const bool leaderboards_enabled      = rcheevos_locals.leaderboards_enabled;
-   const bool leaderboard_trackers      = rcheevos_locals.leaderboard_trackers;
+   settings_t* settings = config_get_ptr();
+   char* s              = settings->arrays.cheevos_leaderboards_enable;
+   char buffer[64];
 
-   rcheevos_locals.leaderboards_enabled = rcheevos_locals.hardcore_active;
+   if (rcheevos_locals.leaderboards_enabled)
+   {
+      if (rcheevos_locals.leaderboard_trackers &&
+          rcheevos_locals.leaderboard_notifications)
+         strlcpy(buffer, "true", sizeof(buffer));
+      else if(rcheevos_locals.leaderboard_trackers)
+         strlcpy(buffer, "trackers", sizeof(buffer));
+      else if(rcheevos_locals.leaderboard_notifications)
+         strlcpy(buffer, "notifications", sizeof(buffer));
+      else
+         strlcpy(buffer, "hidden", sizeof(buffer));
+   }
+   else
+      strlcpy(buffer, "false", sizeof(buffer));
+
+   strlcpy(s, buffer, sizeof(buffer));
+}
+
+void rcheevos_leaderboards_settings_read(void)
+{
+   const settings_t* settings = config_get_ptr();
+
+   rcheevos_locals.leaderboards_enabled = rcheevos_locals.hardcore_active; /* CHECK THIS */
 
    if (string_is_equal(settings->arrays.cheevos_leaderboards_enable, "true"))
    {
+      rcheevos_locals.leaderboards_enabled      = true;
       rcheevos_locals.leaderboard_notifications = true;
-      rcheevos_locals.leaderboard_trackers = true;
+      rcheevos_locals.leaderboard_trackers      = true;
    }
 #if defined(HAVE_GFX_WIDGETS)
    else if (string_is_equal(
             settings->arrays.cheevos_leaderboards_enable, "trackers"))
    {
+      rcheevos_locals.leaderboards_enabled      = true;
       rcheevos_locals.leaderboard_notifications = false;
       rcheevos_locals.leaderboard_trackers      = true;
    }
    else if (string_is_equal(
             settings->arrays.cheevos_leaderboards_enable, "notifications"))
    {
+      rcheevos_locals.leaderboards_enabled      = true;
       rcheevos_locals.leaderboard_notifications = true;
+      rcheevos_locals.leaderboard_trackers      = false;
+   }
+   else if (string_is_equal(
+            settings->arrays.cheevos_leaderboards_enable, "hidden"))
+   {
+      rcheevos_locals.leaderboards_enabled      = true;
+      rcheevos_locals.leaderboard_notifications = false;
       rcheevos_locals.leaderboard_trackers      = false;
    }
 #endif
@@ -829,19 +861,19 @@ void rcheevos_leaderboards_enabled_changed(void)
       rcheevos_locals.leaderboard_notifications = false;
       rcheevos_locals.leaderboard_trackers      = false;
    }
+}
 
+void rcheevos_leaderboards_settings_changed(void)
+{
    if (rcheevos_locals.loaded)
    {
-      if (leaderboards_enabled != rcheevos_locals.leaderboards_enabled)
-      {
          if (rcheevos_locals.leaderboards_enabled)
             rcheevos_activate_leaderboards();
          else
             rcheevos_deactivate_leaderboards();
-      }
 
 #if defined(HAVE_GFX_WIDGETS)
-      if (!rcheevos_locals.leaderboard_trackers && leaderboard_trackers)
+      if (!rcheevos_locals.leaderboard_trackers)
       {
          /* Hide any visible trackers */
          unsigned i;
@@ -976,7 +1008,8 @@ void rcheevos_hardcore_enabled_changed(void)
       rcheevos_toggle_hardcore_active(&rcheevos_locals);
 
       /* update leaderboard state flags */
-      rcheevos_leaderboards_enabled_changed();
+      rcheevos_leaderboards_settings_read();
+      rcheevos_leaderboards_settings_changed();
    }
    else if (rcheevos_locals.hardcore_active && rcheevos_locals.loaded)
    {
@@ -2055,7 +2088,8 @@ bool rcheevos_load(const void *data)
    CHEEVOS_LOG(RCHEEVOS_TAG "Load started, hardcore %sactive\n", rcheevos_hardcore_active() ? "" : "not ");
 
    rcheevos_validate_config_settings();
-   rcheevos_leaderboards_enabled_changed();
+   rcheevos_leaderboards_settings_read();
+   rcheevos_leaderboards_settings_changed();
 
    /* Refresh the user agent in case it's not set or has changed */
    rcheevos_client_initialize();

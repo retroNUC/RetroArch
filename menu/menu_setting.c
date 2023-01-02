@@ -8748,30 +8748,15 @@ static void achievement_hardcore_mode_write_handler(rarch_setting_t *setting)
    rcheevos_hardcore_enabled_changed();
 }
 
-static void achievement_leaderboards_enabled_write_handler(rarch_setting_t* setting)
+static void cheevos_leaderboard_write_handler(rarch_setting_t* setting)
 {
-   rcheevos_leaderboards_enabled_changed();
+   rcheevos_leaderboards_settings_write();
+   rcheevos_leaderboards_settings_changed();
 }
 
-static void achievement_leaderboards_get_string_representation(rarch_setting_t* setting, char* s, size_t len)
+static void cheevos_leaderboard_read_handler(rarch_setting_t* setting)
 {
-   const char* value = setting->value.target.string;
-#if defined(HAVE_GFX_WIDGETS)
-   if (string_is_equal(value, "true"))
-      strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_ENABLED), len);
-   else if (string_is_equal(value, "trackers"))
-      strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_CHEEVOS_TRACKERS_ONLY), len);
-   else if (string_is_equal(value, "notifications"))
-      strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_CHEEVOS_NOTIFICATIONS_ONLY), len);
-   else
-      strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_DISABLED), len);
-#else
-   /* using these enum strings makes the widget behave like a boolean toggle */
-   if (string_is_equal(value, "true"))
-      strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_ON), len);
-   else
-      strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_OFF), len);
-#endif
+   rcheevos_leaderboards_settings_read();
 }
 
 #ifdef HAVE_GFX_WIDGETS
@@ -19890,29 +19875,21 @@ static bool setting_append_list(
                SD_FLAG_ADVANCED
                );
 
-         CONFIG_STRING_OPTIONS(
+         CONFIG_BOOL(
                list, list_info,
-               settings->arrays.cheevos_leaderboards_enable,
-               sizeof(settings->arrays.cheevos_leaderboards_enable),
+               &rcheevos_locals.leaderboards_enabled,
                MENU_ENUM_LABEL_CHEEVOS_LEADERBOARDS_ENABLE,
                MENU_ENUM_LABEL_VALUE_CHEEVOS_LEADERBOARDS_ENABLE,
-               "true",
-               "false|true",
+               false,
+               MENU_ENUM_LABEL_VALUE_OFF,
+               MENU_ENUM_LABEL_VALUE_ON,
                &group_info,
                &subgroup_info,
                parent_group,
-               achievement_leaderboards_enabled_write_handler,
-               general_read_handler);
-#if defined(HAVE_GFX_WIDGETS)
-         (*list)[list_info->index - 1].values = "false|true|trackers|notifications";
-         (*list)[list_info->index - 1].action_ok = setting_action_ok_mapped_string;
-#else
-         (*list)[list_info->index - 1].action_ok = setting_string_action_left_string_options;
-#endif
-         (*list)[list_info->index - 1].action_left = setting_string_action_left_string_options;
-         (*list)[list_info->index - 1].action_right = setting_string_action_right_string_options;
-         (*list)[list_info->index - 1].get_string_representation = achievement_leaderboards_get_string_representation;
-         (*list)[list_info->index - 1].free_flags &= ~SD_FREE_FLAG_VALUES;
+               cheevos_leaderboard_write_handler,
+               cheevos_leaderboard_read_handler,
+               SD_FLAG_ADVANCED
+         );
 
          CONFIG_BOOL(
                list, list_info,
@@ -20128,7 +20105,7 @@ static bool setting_append_list(
 
          CONFIG_BOOL(
             list, list_info,
-            &settings->bools.cheevos_visibility_lbevents,
+            &rcheevos_locals.leaderboard_notifications,
             MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBEVENTS,
             MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBEVENTS,
             true,
@@ -20137,14 +20114,14 @@ static bool setting_append_list(
             &group_info,
             &subgroup_info,
             parent_group,
-            general_write_handler,
-            general_read_handler,
+            cheevos_leaderboard_write_handler,
+            cheevos_leaderboard_read_handler,
             SD_FLAG_NONE
          );
 
          CONFIG_BOOL(
             list, list_info,
-            &settings->bools.cheevos_visibility_lbtracker,
+            &rcheevos_locals.leaderboard_trackers,
             MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBTRACKER,
             MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBTRACKER,
             true,
@@ -20153,8 +20130,8 @@ static bool setting_append_list(
             &group_info,
             &subgroup_info,
             parent_group,
-            general_write_handler,
-            general_read_handler,
+            cheevos_leaderboard_write_handler,
+            cheevos_leaderboard_read_handler,
             SD_FLAG_NONE
          );
 
