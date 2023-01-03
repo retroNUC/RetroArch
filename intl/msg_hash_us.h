@@ -5929,11 +5929,19 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_SUMMARY,
-   "Startup Summary (TODO::ENUM)"
+   "Startup Summary"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_CHEEVOS_VISIBILITY_SUMMARY,
-   "'All Games' shows all matching games, even if it has no published achievements."
+   "Shows information about the game being loaded and the user's current progress.\n'All Games in Database' will show summary for games with no published achievements."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_SUMMARY_ALLGAMES,
+   "All Games in Database"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_SUMMARY_HASCHEEVOS,
+   "Games with Achievements"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_UNLOCK,
@@ -5941,7 +5949,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_CHEEVOS_VISIBILITY_UNLOCK,
-   "Shows notifications when an achievement is unlocked, and when a game is mastered."
+   "Shows notifications when an achievement is unlocked or a game is mastered."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CHEEVOS_CHALLENGE_INDICATORS,
@@ -5949,11 +5957,11 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_CHEEVOS_CHALLENGE_INDICATORS,
-   "Allows achievements to display an on-screen indicator while the achievement can be earned."
+   "Shows on-screen indicators while some conditional achievements can be earned."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBEVENTS,
-   "Leaderboard Events"
+   "Leaderboard Messages"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_CHEEVOS_VISIBILITY_LBEVENTS,
@@ -5965,7 +5973,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_CHEEVOS_VISIBILITY_LBTRACKER,
-   "On-screen scores and timers related to a current leaderboard attempt."
+   "Shows on-screen scores and timers related to a current leaderboard attempt."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CHEEVOS_VERBOSE_ENABLE,

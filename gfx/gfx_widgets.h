@@ -99,6 +99,15 @@ enum cheevos_appearance_anchor
    CHEEVOS_APPEARANCE_ANCHOR_LAST
 };
 
+enum cheevos_visibility_summary
+{
+   CHEEVOS_VISIBILITY_SUMMARY_ALLGAMES = 0,
+   CHEEVOS_VISIBILITY_SUMMARY_HASCHEEVOS,
+   CHEEVOS_VISIBILITY_SUMMARY_OFF,
+   CHEEVOS_VISIBILITY_SUMMARY_LAST
+};
+
+
 /* This structure holds all objects + metadata
  * corresponding to a particular font */
 typedef struct

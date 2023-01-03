@@ -8291,7 +8291,7 @@ unsigned menu_displaylist_build_list(
       case DISPLAYLIST_CHEEVOS_VISIBILITY_SETTINGS_LIST:
          {
             menu_displaylist_build_info_selective_t build_list[] = {
-               {MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_SUMMARY,                            PARSE_ONLY_BOOL,   true},
+               {MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_SUMMARY,                            PARSE_ONLY_UINT,   true},
                {MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_UNLOCK,                             PARSE_ONLY_BOOL,   true},
                {MENU_ENUM_LABEL_CHEEVOS_CHALLENGE_INDICATORS,                          PARSE_ONLY_BOOL,   true},
                {MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBEVENTS,                           PARSE_ONLY_BOOL,   true},

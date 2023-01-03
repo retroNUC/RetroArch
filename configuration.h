@@ -342,6 +342,7 @@ typedef struct settings
 #endif
 
       unsigned cheevos_appearance_anchor;
+      unsigned cheevos_visibility_summary;
    } uints;
 
    struct
@@ -834,7 +835,6 @@ typedef struct settings
       bool cheevos_visibility_lbevents;
       bool cheevos_visibility_lbtracker;
       bool cheevos_visibility_unlock;
-      bool cheevos_visibility_summary;
 
       /* Camera */
       bool camera_allow;
