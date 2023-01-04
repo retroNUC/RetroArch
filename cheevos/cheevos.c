@@ -104,10 +104,7 @@ static rcheevos_locals_t rcheevos_locals =
    true, /* core_supports */
    false,/* leaderboards_enabled */
    false,/* leaderboard_notifications */
-   false,/* leaderboard_notif_subonly */
-   false,/* leaderboard_trackers */
-   false,/* cfg_leaderboards_enabled */
-   false /* cfg_leaderboard_trackers */
+   false /* leaderboard_trackers */
 };
 
 rcheevos_locals_t* get_rcheevos_locals(void)
@@ -334,27 +331,24 @@ void rcheevos_award_achievement(rcheevos_locals_t* locals,
          cheevo->id, cheevo->title, cheevo->description);
 
    /* Show the on screen message. */
-   if (settings->bools.cheevos_visibility_unlock)
-   {
 #if defined(HAVE_GFX_WIDGETS)
-      if (widgets_ready)
-         gfx_widgets_push_achievement(msg_hash_to_str(MSG_ACHIEVEMENT_UNLOCKED), cheevo->title, cheevo->badge);
-      else
+   if (widgets_ready)
+      gfx_widgets_push_achievement(msg_hash_to_str(MSG_ACHIEVEMENT_UNLOCKED), cheevo->title, cheevo->badge);
+   else
 #endif
-      {
-         char buffer[256];
-         size_t _len    = strlcpy(buffer,
+   {
+      char buffer[256];
+      size_t _len    = strlcpy(buffer,
             msg_hash_to_str(MSG_ACHIEVEMENT_UNLOCKED),
             sizeof(buffer));
-         buffer[_len  ] = ':';
-         buffer[_len+1] = ' ';
-         buffer[_len+2] = '\0';
-         strlcat(buffer, cheevo->title, sizeof(buffer));
-         runloop_msg_queue_push(buffer, 0, 2 * 60, false, NULL,
+      buffer[_len  ] = ':';
+      buffer[_len+1] = ' ';
+      buffer[_len+2] = '\0';
+      strlcat(buffer, cheevo->title, sizeof(buffer));
+      runloop_msg_queue_push(buffer, 0, 2 * 60, false, NULL,
             MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
-         runloop_msg_queue_push(cheevo->description, 0, 3 * 60, false, NULL,
+      runloop_msg_queue_push(cheevo->description, 0, 3 * 60, false, NULL,
             MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
-      }
    }
 
    /* Start the award task (unofficial achievement 
@@ -420,8 +414,6 @@ static rcheevos_ralboard_t* rcheevos_find_lboard(unsigned id)
 static void rcheevos_lboard_submit(rcheevos_locals_t* locals,
       rcheevos_ralboard_t* lboard, int value, bool widgets_ready)
 {
-   const settings_t* settings = config_get_ptr();
-
    size_t _len;
    char buffer[256];
    char formatted_value[16];
@@ -446,21 +438,18 @@ static void rcheevos_lboard_submit(rcheevos_locals_t* locals,
    CHEEVOS_LOG(RCHEEVOS_TAG "Submitting %s for leaderboard %u\n",
          formatted_value, lboard->id);
 
-   /* Show the on-screen message */
-   if (settings->uints.cheevos_visibility_lbmessage != RCHEEVOS_VISIBILITY_LBMESSAGE_OFF)
-   {
-      strlcpy(buffer, "Submitted ", sizeof(buffer));
-      _len = strlcat(buffer, formatted_value, sizeof(buffer));
-      buffer[_len] = ' ';
-      buffer[_len + 1] = 'f';
-      buffer[_len + 2] = 'o';
-      buffer[_len + 3] = 'r';
-      buffer[_len + 4] = ' ';
-      buffer[_len + 5] = '\0';
-      strlcat(buffer, lboard->title, sizeof(buffer));
-      runloop_msg_queue_push(buffer, 0, 2 * 60, false, NULL,
+   /* Show the on-screen message (regardless of notifications setting). */
+   strlcpy(buffer, "Submitted ", sizeof(buffer));
+   _len           = strlcat(buffer, formatted_value, sizeof(buffer));
+   buffer[_len  ] = ' ';
+   buffer[_len+1] = 'f';
+   buffer[_len+2] = 'o';
+   buffer[_len+3] = 'r';
+   buffer[_len+4] = ' ';
+   buffer[_len+5] = '\0';
+   strlcat(buffer, lboard->title, sizeof(buffer));
+   runloop_msg_queue_push(buffer, 0, 2 * 60, false, NULL,
          MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
-   }
 
    /* Start the submit task */
    rcheevos_client_submit_lboard_entry(lboard->id, value);
@@ -807,62 +796,30 @@ static void rcheevos_deactivate_leaderboards(void)
    }
 }
 
-void rcheevos_leaderboards_settings_write(void)
+void rcheevos_leaderboards_enabled_changed(void)
 {
-   settings_t* settings = config_get_ptr();
-   char* s              = settings->arrays.cheevos_leaderboards_enable;
-   char buffer[64];
+   const settings_t* settings           = config_get_ptr();
+   const bool leaderboards_enabled      = rcheevos_locals.leaderboards_enabled;
+   const bool leaderboard_trackers      = rcheevos_locals.leaderboard_trackers;
 
-   if (rcheevos_locals.leaderboards_enabled)
-   {
-      if (rcheevos_locals.leaderboard_trackers &&
-          rcheevos_locals.leaderboard_notifications)
-         strlcpy(buffer, "true", sizeof(buffer));
-      else if(rcheevos_locals.leaderboard_trackers)
-         strlcpy(buffer, "trackers", sizeof(buffer));
-      else if(rcheevos_locals.leaderboard_notifications)
-         strlcpy(buffer, "notifications", sizeof(buffer));
-      else
-         strlcpy(buffer, "hidden", sizeof(buffer));
-   }
-   else
-      strlcpy(buffer, "false", sizeof(buffer));
-
-   strlcpy(s, buffer, sizeof(buffer));
-}
-
-void rcheevos_leaderboards_settings_read(void)
-{
-   const settings_t* settings = config_get_ptr();
-
-   rcheevos_locals.leaderboards_enabled = rcheevos_locals.hardcore_active; /* CHECK THIS */
+   rcheevos_locals.leaderboards_enabled = rcheevos_locals.hardcore_active;
 
    if (string_is_equal(settings->arrays.cheevos_leaderboards_enable, "true"))
    {
-      rcheevos_locals.leaderboards_enabled      = true;
       rcheevos_locals.leaderboard_notifications = true;
-      rcheevos_locals.leaderboard_trackers      = true;
+      rcheevos_locals.leaderboard_trackers = true;
    }
 #if defined(HAVE_GFX_WIDGETS)
    else if (string_is_equal(
             settings->arrays.cheevos_leaderboards_enable, "trackers"))
    {
-      rcheevos_locals.leaderboards_enabled      = true;
       rcheevos_locals.leaderboard_notifications = false;
       rcheevos_locals.leaderboard_trackers      = true;
    }
    else if (string_is_equal(
             settings->arrays.cheevos_leaderboards_enable, "notifications"))
    {
-      rcheevos_locals.leaderboards_enabled      = true;
       rcheevos_locals.leaderboard_notifications = true;
-      rcheevos_locals.leaderboard_trackers      = false;
-   }
-   else if (string_is_equal(
-            settings->arrays.cheevos_leaderboards_enable, "hidden"))
-   {
-      rcheevos_locals.leaderboards_enabled      = true;
-      rcheevos_locals.leaderboard_notifications = false;
       rcheevos_locals.leaderboard_trackers      = false;
    }
 #endif
@@ -872,19 +829,19 @@ void rcheevos_leaderboards_settings_read(void)
       rcheevos_locals.leaderboard_notifications = false;
       rcheevos_locals.leaderboard_trackers      = false;
    }
-}
 
-void rcheevos_leaderboards_settings_changed(void)
-{
-   if (rcheevos_locals.loaded)                     /* TODO: Only set this if state changes? */
+   if (rcheevos_locals.loaded)
    {
+      if (leaderboards_enabled != rcheevos_locals.leaderboards_enabled)
+      {
          if (rcheevos_locals.leaderboards_enabled)
             rcheevos_activate_leaderboards();
          else
             rcheevos_deactivate_leaderboards();
+      }
 
 #if defined(HAVE_GFX_WIDGETS)
-      if (!rcheevos_locals.leaderboard_trackers)   /* TODO: Only set this if state changes? */
+      if (!rcheevos_locals.leaderboard_trackers && leaderboard_trackers)
       {
          /* Hide any visible trackers */
          unsigned i;
@@ -1019,8 +976,7 @@ void rcheevos_hardcore_enabled_changed(void)
       rcheevos_toggle_hardcore_active(&rcheevos_locals);
 
       /* update leaderboard state flags */
-      rcheevos_leaderboards_settings_read();
-      rcheevos_leaderboards_settings_changed();
+      rcheevos_leaderboards_enabled_changed();
    }
    else if (rcheevos_locals.hardcore_active && rcheevos_locals.loaded)
    {
@@ -1521,47 +1477,44 @@ void rcheevos_show_mastery_placard(void)
    title[sizeof(title) - 1] = '\0';
    CHEEVOS_LOG(RCHEEVOS_TAG "%s\n", title);
 
-   if (settings->bools.cheevos_visibility_unlock)
-   {
 #if defined (HAVE_GFX_WIDGETS)
-      if (gfx_widgets_ready())
-      {
-         const bool content_runtime_log      = settings->bools.content_runtime_log;
-         const bool content_runtime_log_aggr = settings->bools.content_runtime_log_aggregate;
-         char msg[128];
-         size_t len = strlcpy(msg, rcheevos_locals.displayname, sizeof(msg));
+   if (gfx_widgets_ready())
+   {
+      const bool content_runtime_log      = settings->bools.content_runtime_log;
+      const bool content_runtime_log_aggr = settings->bools.content_runtime_log_aggregate;
+      char msg[128];
+      size_t len = strlcpy(msg, rcheevos_locals.displayname, sizeof(msg));
 
-         if (len < sizeof(msg) - 12 &&
-            (content_runtime_log || content_runtime_log_aggr))
-         {
-            const char* content_path   = path_get(RARCH_PATH_CONTENT);
-            const char* core_path      = path_get(RARCH_PATH_CORE);
-            runtime_log_t* runtime_log = runtime_log_init(
+      if (len < sizeof(msg) - 12 &&
+         (content_runtime_log || content_runtime_log_aggr))
+      {
+         const char* content_path   = path_get(RARCH_PATH_CONTENT);
+         const char* core_path      = path_get(RARCH_PATH_CORE);
+         runtime_log_t* runtime_log = runtime_log_init(
                content_path, core_path,
                settings->paths.directory_runtime_log,
                settings->paths.directory_playlist,
                !content_runtime_log_aggr);
 
-            if (runtime_log)
-            {
-               const runloop_state_t* runloop_state = runloop_state_get_ptr();
-               runtime_log_add_runtime_usec(runtime_log,
-                  runloop_state->core_runtime_usec);
+         if (runtime_log)
+         {
+            const runloop_state_t* runloop_state = runloop_state_get_ptr();
+            runtime_log_add_runtime_usec(runtime_log,
+               runloop_state->core_runtime_usec);
 
-               len += snprintf(msg + len, sizeof(msg) - len, " | ");
-               runtime_log_get_runtime_str(runtime_log, msg + len, sizeof(msg) - len);
-               msg[sizeof(msg) - 1] = '\0';
+            len += snprintf(msg + len, sizeof(msg) - len, " | ");
+            runtime_log_get_runtime_str(runtime_log, msg + len, sizeof(msg) - len);
+            msg[sizeof(msg) - 1] = '\0';
 
-               free(runtime_log);
-            }
+            free(runtime_log);
          }
-
-         gfx_widgets_push_achievement(title, msg, rcheevos_locals.game.badge_name);
       }
-      else
-#endif
-         runloop_msg_queue_push(title, 0, 3 * 60, false, NULL, MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
+
+      gfx_widgets_push_achievement(title, msg, rcheevos_locals.game.badge_name);
    }
+   else
+#endif
+      runloop_msg_queue_push(title, 0, 3 * 60, false, NULL, MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
 }
 
 static void rcheevos_show_game_placard(void)
@@ -1621,19 +1574,14 @@ static void rcheevos_show_game_placard(void)
    msg[sizeof(msg) - 1] = 0;
    CHEEVOS_LOG(RCHEEVOS_TAG "%s\n", msg);
 
-   if (settings->uints.cheevos_visibility_summary != CHEEVOS_VISIBILITY_SUMMARY_OFF)
+   if (settings->bools.cheevos_verbose_enable)
    {
-      /* TODO: Maybe override behaviour for development mode? */
-      if (number_of_core > 0 ||
-          settings->uints.cheevos_visibility_summary == CHEEVOS_VISIBILITY_SUMMARY_ALLGAMES)
-      {
 #if defined (HAVE_GFX_WIDGETS)
-         if (gfx_widgets_ready())
-            gfx_widgets_push_achievement(rcheevos_locals.game.title, msg, rcheevos_locals.game.badge_name);
-         else
+      if (gfx_widgets_ready())
+         gfx_widgets_push_achievement(rcheevos_locals.game.title, msg, rcheevos_locals.game.badge_name);
+      else
 #endif
-            runloop_msg_queue_push(msg, 0, 3 * 60, false, NULL, MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
-      }
+         runloop_msg_queue_push(msg, 0, 3 * 60, false, NULL, MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
    }
 }
 
@@ -2107,8 +2055,7 @@ bool rcheevos_load(const void *data)
    CHEEVOS_LOG(RCHEEVOS_TAG "Load started, hardcore %sactive\n", rcheevos_hardcore_active() ? "" : "not ");
 
    rcheevos_validate_config_settings();
-   rcheevos_leaderboards_settings_read();
-   rcheevos_leaderboards_settings_changed();
+   rcheevos_leaderboards_enabled_changed();
 
    /* Refresh the user agent in case it's not set or has changed */
    rcheevos_client_initialize();
