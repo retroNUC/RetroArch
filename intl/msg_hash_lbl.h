@@ -457,8 +457,8 @@ MSG_HASH(
    "cheevos_visibility_settings"
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBEVENTS,
-   "cheevos_visibility_lbevents"
+   MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBMESSAGE,
+   "cheevos_visibility_lbmessage"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBTRACKER,

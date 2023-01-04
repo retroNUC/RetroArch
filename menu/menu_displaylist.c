@@ -8294,7 +8294,7 @@ unsigned menu_displaylist_build_list(
                {MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_SUMMARY,                            PARSE_ONLY_UINT,   true},
                {MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_UNLOCK,                             PARSE_ONLY_BOOL,   true},
                {MENU_ENUM_LABEL_CHEEVOS_CHALLENGE_INDICATORS,                          PARSE_ONLY_BOOL,   true},
-               {MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBEVENTS,                           PARSE_ONLY_BOOL,   true},
+               {MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBMESSAGE,                          PARSE_ONLY_UINT,   true},
                {MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBTRACKER,                          PARSE_ONLY_BOOL,   true},
                {MENU_ENUM_LABEL_CHEEVOS_VERBOSE_ENABLE,                                PARSE_ONLY_BOOL,   true},
             };

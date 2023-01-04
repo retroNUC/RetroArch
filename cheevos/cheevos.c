@@ -104,7 +104,10 @@ static rcheevos_locals_t rcheevos_locals =
    true, /* core_supports */
    false,/* leaderboards_enabled */
    false,/* leaderboard_notifications */
-   false /* leaderboard_trackers */
+   false,/* leaderboard_notif_subonly */
+   false,/* leaderboard_trackers */
+   false,/* cfg_leaderboards_enabled */
+   false /* cfg_leaderboard_trackers */
 };
 
 rcheevos_locals_t* get_rcheevos_locals(void)
@@ -417,6 +420,8 @@ static rcheevos_ralboard_t* rcheevos_find_lboard(unsigned id)
 static void rcheevos_lboard_submit(rcheevos_locals_t* locals,
       rcheevos_ralboard_t* lboard, int value, bool widgets_ready)
 {
+   const settings_t* settings = config_get_ptr();
+
    size_t _len;
    char buffer[256];
    char formatted_value[16];
@@ -441,18 +446,21 @@ static void rcheevos_lboard_submit(rcheevos_locals_t* locals,
    CHEEVOS_LOG(RCHEEVOS_TAG "Submitting %s for leaderboard %u\n",
          formatted_value, lboard->id);
 
-   /* Show the on-screen message (regardless of notifications setting). */
-   strlcpy(buffer, "Submitted ", sizeof(buffer));
-   _len           = strlcat(buffer, formatted_value, sizeof(buffer));
-   buffer[_len  ] = ' ';
-   buffer[_len+1] = 'f';
-   buffer[_len+2] = 'o';
-   buffer[_len+3] = 'r';
-   buffer[_len+4] = ' ';
-   buffer[_len+5] = '\0';
-   strlcat(buffer, lboard->title, sizeof(buffer));
-   runloop_msg_queue_push(buffer, 0, 2 * 60, false, NULL,
+   /* Show the on-screen message */
+   if (settings->uints.cheevos_visibility_lbmessage != RCHEEVOS_VISIBILITY_LBMESSAGE_OFF)
+   {
+      strlcpy(buffer, "Submitted ", sizeof(buffer));
+      _len = strlcat(buffer, formatted_value, sizeof(buffer));
+      buffer[_len] = ' ';
+      buffer[_len + 1] = 'f';
+      buffer[_len + 2] = 'o';
+      buffer[_len + 3] = 'r';
+      buffer[_len + 4] = ' ';
+      buffer[_len + 5] = '\0';
+      strlcat(buffer, lboard->title, sizeof(buffer));
+      runloop_msg_queue_push(buffer, 0, 2 * 60, false, NULL,
          MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
+   }
 
    /* Start the submit task */
    rcheevos_client_submit_lboard_entry(lboard->id, value);

@@ -107,7 +107,6 @@ enum cheevos_visibility_summary
    CHEEVOS_VISIBILITY_SUMMARY_LAST
 };
 
-
 /* This structure holds all objects + metadata
  * corresponding to a particular font */
 typedef struct

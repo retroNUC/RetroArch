@@ -5960,13 +5960,17 @@ MSG_HASH(
    "Shows on-screen indicators while some conditional achievements can be earned."
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBEVENTS,
+   MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBMESSAGE,
    "Leaderboard Messages"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_CHEEVOS_VISIBILITY_LBEVENTS,
+   MENU_ENUM_SUBLABEL_CHEEVOS_VISIBILITY_LBMESSAGE,
    "Shows messages when a leaderboard attempt is started, submitted, or failed."
-)
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBMESSAGE_SUBONLY,
+   "Submits Only"
+   )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBTRACKER,
    "Leaderboard Trackers"

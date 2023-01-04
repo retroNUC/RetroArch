@@ -8789,6 +8789,36 @@ static void setting_get_string_representation_uint_cheevos_visibility_summary(
    }
 }
 
+static void setting_get_string_representation_uint_cheevos_visibility_lbmessage(
+   rarch_setting_t* setting,
+   char* s, size_t len)
+{
+   if (!setting)
+      return;
+
+   switch (*setting->value.target.unsigned_integer)
+   {
+   case CHEEVOS_VISIBILITY_LBMESSAGE_ALL:
+      strlcpy(s,
+         msg_hash_to_str(
+            MENU_ENUM_LABEL_VALUE_ON),
+         len);
+      break;
+   case CHEEVOS_VISIBILITY_LBMESSAGE_SUBONLY:
+      strlcpy(s,
+         msg_hash_to_str(
+            MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBMESSAGE_SUBONLY),
+         len);
+      break;
+   case CHEEVOS_VISIBILITY_LBMESSAGE_OFF:
+      strlcpy(s,
+         msg_hash_to_str(
+            MENU_ENUM_LABEL_VALUE_OFF),
+         len);
+      break;
+   }
+}
+
 #ifdef HAVE_GFX_WIDGETS
 static void setting_get_string_representation_uint_cheevos_appearance_anchor(
    rarch_setting_t* setting,
@@ -19907,7 +19937,7 @@ static bool setting_append_list(
 
          CONFIG_BOOL(
                list, list_info,
-               &rcheevos_locals.leaderboards_enabled,
+               &rcheevos_locals.cfg_leaderboards_enabled,
                MENU_ENUM_LABEL_CHEEVOS_LEADERBOARDS_ENABLE,
                MENU_ENUM_LABEL_VALUE_CHEEVOS_LEADERBOARDS_ENABLE,
                false,
@@ -20133,25 +20163,28 @@ static bool setting_append_list(
             SD_FLAG_NONE
          );
 
-         CONFIG_BOOL(
+         CONFIG_UINT(
             list, list_info,
-            &rcheevos_locals.leaderboard_notifications,
-            MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBEVENTS,
-            MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBEVENTS,
-            true,
-            MENU_ENUM_LABEL_VALUE_OFF,
-            MENU_ENUM_LABEL_VALUE_ON,
+            &settings->uints.cheevos_visibility_lbmessage,
+            MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBMESSAGE,
+            MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBMESSAGE,
+            DEFAULT_CHEEVOS_VISIBILITY_LBMESSAGE,
             &group_info,
             &subgroup_info,
             parent_group,
             cheevos_leaderboard_write_handler,
-            cheevos_leaderboard_read_handler,
-            SD_FLAG_NONE
-         );
+            cheevos_leaderboard_read_handler);
+         (*list)[list_info->index - 1].action_ok = &setting_action_ok_uint;
+         (*list)[list_info->index - 1].action_left = &setting_uint_action_left_with_refresh;
+         (*list)[list_info->index - 1].action_right = &setting_uint_action_right_with_refresh;
+         (*list)[list_info->index - 1].get_string_representation =
+            &setting_get_string_representation_uint_cheevos_visibility_lbmessage;
+         menu_settings_list_current_add_range(list, list_info, 0, RCHEEVOS_VISIBILITY_LBMESSAGE_LAST - 1, 1, true, true);
+         (*list)[list_info->index - 1].ui_type = ST_UI_TYPE_UINT_COMBOBOX;
 
          CONFIG_BOOL(
             list, list_info,
-            &rcheevos_locals.leaderboard_trackers,
+            &rcheevos_locals.cfg_leaderboard_trackers,
             MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_LBTRACKER,
             MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_LBTRACKER,
             true,
@@ -20180,22 +20213,6 @@ static bool setting_append_list(
             general_read_handler,
             SD_FLAG_NONE
          );
-
-   /*    CONFIG_BOOL(
-            list, list_info,
-            &settings->bools.cheevos_visibility_summary,
-            MENU_ENUM_LABEL_CHEEVOS_VISIBILITY_SUMMARY,
-            MENU_ENUM_LABEL_VALUE_CHEEVOS_VISIBILITY_SUMMARY,
-            true,
-            MENU_ENUM_LABEL_VALUE_OFF,
-            MENU_ENUM_LABEL_VALUE_ON,
-            &group_info,
-            &subgroup_info,
-            parent_group,
-            general_write_handler,
-            general_read_handler,
-            SD_FLAG_NONE
-         ); */
 
          CONFIG_UINT(
             list, list_info,
