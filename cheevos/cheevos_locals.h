@@ -118,6 +118,14 @@ enum rcheevos_summary_notif
    RCHEEVOS_SUMMARY_LAST
 };
 
+enum rcheevos_lbmsg_vis
+{
+   RCHEEVOS_MBMSG_VIS_ALL = 0,
+   RCHEEVOS_MBMSG_VIS_SUBONLY,
+   RCHEEVOS_MBMSG_VIS_OFF,
+   RCHEEVOS_MBMSG_VIS_LAST
+};
+
 typedef struct rcheevos_load_info_t
 {
    enum rcheevos_load_state state;
@@ -186,7 +194,11 @@ typedef struct rcheevos_locals_t
    bool core_supports;                /* false if core explicitly disables achievements */
    bool leaderboards_enabled;         /* leaderboards are enabled */
    bool leaderboard_notifications;    /* leaderboard notifications are enabled */
+   bool leaderboard_notif_subonly;    /* leaderboard notifications are submissions only */
    bool leaderboard_trackers;         /* leaderboard trackers are enabled */
+
+   bool cfg_leaderboards_enabled;     /* new value updated via menu_setting */
+   bool cfg_leaderboard_trackers;     /* new value updated via menu_setting */
 } rcheevos_locals_t;
 
 rcheevos_locals_t* get_rcheevos_locals(void);
