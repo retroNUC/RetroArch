@@ -138,7 +138,7 @@ static int task_http_iterate_transfer(retro_task_t *task)
    return 0;
 }
 
-static void task_http_transfer_handler(retro_task_t *task)
+static void task_http_transfer_handler(retro_task_t *task) /* t->handler */
 {
    http_transfer_data_t *data = NULL;
    http_handle_t        *http = (http_handle_t*)task->state;
@@ -223,7 +223,7 @@ task_finished:
    free(http);
 }
 
-static void task_http_transfer_cleanup(retro_task_t *task)
+static void task_http_transfer_cleanup(retro_task_t *task) /* t->cleanup */
 {
    http_transfer_data_t* data = (http_transfer_data_t*)task_get_data(task);
    if (data)
@@ -257,7 +257,7 @@ static bool task_http_retriever(retro_task_t *task, void *data)
    return true;
 }
 
-static void http_transfer_progress_cb(retro_task_t *task)
+static void http_transfer_progress_cb(retro_task_t *task) /* t->progress_cb */
 {
 #ifdef RARCH_INTERNAL
    if (task)

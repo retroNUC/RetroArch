@@ -682,6 +682,7 @@ static void rcheevos_client_login(const char* username,
       request->callback = callback;
       request->callback_data = userdata;
 
+      CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_login\n");
       rcheevos_async_begin_request(request, result,
          rcheevos_async_login_callback,
          CHEEVOS_ASYNC_LOGIN, 0,
@@ -748,6 +749,7 @@ void rcheevos_client_identify_game(const char* hash,
       request->callback      = callback;
       request->callback_data = userdata;
 
+      CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_identify_game\n");
       rcheevos_async_begin_request(request, result,
          rcheevos_async_resolve_hash_callback,
          CHEEVOS_ASYNC_RESOLVE_HASH, 0,
@@ -1039,6 +1041,7 @@ static void rcheevos_client_fetch_game_badge(const char* badge_name, rcheevos_as
          request->callback_data = data;
 
          rcheevos_begin_load_state(RCHEEVOS_LOAD_STATE_FETCHING_GAME_DATA);
+         CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_fetch_game_badge: %s\n", badge_name);
          rcheevos_async_begin_request(request, result,
             rcheevos_async_fetch_badge_callback,
             CHEEVOS_ASYNC_FETCH_BADGE, atoi(badge_name), NULL,
@@ -1172,6 +1175,7 @@ void rcheevos_client_initialize_runtime(unsigned game_id,
       request->callback_data = data;
 
       rcheevos_begin_load_state(RCHEEVOS_LOAD_STATE_FETCHING_GAME_DATA);
+      CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_initialize_runtime: FETCH_GAME_DATA\n");
       rcheevos_async_begin_request(request, result,
          rcheevos_async_fetch_game_data_callback,
          CHEEVOS_ASYNC_FETCH_GAME_DATA, rcheevos_locals->game.id,
@@ -1217,6 +1221,7 @@ void rcheevos_client_initialize_runtime(unsigned game_id,
             rcheevos_begin_load_state(RCHEEVOS_LOAD_STATE_FETCHING_GAME_DATA);
             if (i == 0)
             {
+               CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_initialize_runtime: FETCH_USER_UNLOCKS\n");
                rcheevos_async_begin_request(request, result,
                   rcheevos_async_fetch_user_unlocks_callback,
                   CHEEVOS_ASYNC_FETCH_USER_UNLOCKS,
@@ -1226,6 +1231,7 @@ void rcheevos_client_initialize_runtime(unsigned game_id,
             }
             else
             {
+               CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_initialize_runtime: FETCH_HARDCORE_USER_UNLOCKS\n");
                rcheevos_async_begin_request(request, result,
                   rcheevos_async_fetch_user_unlocks_callback,
                   CHEEVOS_ASYNC_FETCH_HARDCORE_USER_UNLOCKS,
@@ -1387,6 +1393,7 @@ void rcheevos_client_start_session(unsigned game_id)
          result = rc_api_init_start_session_request(
                &request->request, &api_params);
 
+         CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_start_session\n");
          rcheevos_async_begin_request(request, result,
             rcheevos_async_start_session_callback,
             CHEEVOS_ASYNC_START_SESSION, game_id,
@@ -1596,6 +1603,7 @@ static bool rcheevos_client_fetch_badge(
          request->callback_data = data;
 
          rcheevos_begin_load_state(RCHEEVOS_LOAD_STATE_FETCHING_BADGES);
+         CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_fetch_badge: %s\n", badge_name);
          rcheevos_async_begin_request(request, result,
             rcheevos_async_fetch_badge_callback,
             CHEEVOS_ASYNC_FETCH_BADGE, atoi(badge_name), NULL,
@@ -1795,6 +1803,7 @@ void rcheevos_client_award_achievement(unsigned achievement_id)
       result = rc_api_init_award_achievement_request(&request->request,
             &api_params);
 
+      CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_award_achievement\n");
       rcheevos_async_begin_request(request, result,
             rcheevos_async_award_achievement_callback, 
             CHEEVOS_ASYNC_AWARD_ACHIEVEMENT, achievement_id,
@@ -1850,6 +1859,7 @@ void rcheevos_client_submit_lboard_entry(unsigned leaderboard_id,
       result = rc_api_init_submit_lboard_entry_request(&request->request,
             &api_params);
 
+      CHEEVOS_LOG(RCHEEVOS_TAG "Starting async request for rcheevos_client_submit_lboard_entry\n");
       rcheevos_async_begin_request(request, result,
             rcheevos_async_submit_lboard_entry_callback, 
             CHEEVOS_ASYNC_SUBMIT_LBOARD, leaderboard_id,

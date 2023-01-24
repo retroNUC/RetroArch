@@ -29,14 +29,18 @@
 
 RETRO_BEGIN_DECLS
 
+/* call this after successful connect, passing in returned fd */
 void* ssl_socket_init(int fd, const char *domain);
 
-int ssl_socket_connect(void *state_data, void *data, bool timeout_enable, bool nonblock);
+/* NOTE: 'nonblock' param is unused? */
+int ssl_socket_connect(void *state_data, void *data, bool timeout_enable, /*unused*/ bool nonblock);
 
 int ssl_socket_send_all_blocking(void *state_data, const void *data_, size_t size, bool no_signal);
 
+/* NOTE: unused function? */
 ssize_t ssl_socket_send_all_nonblocking(void *state_data, const void *data_, size_t size, bool no_signal);
 
+/* NOTE: unused function? */
 int ssl_socket_receive_all_blocking(void *state_data, void *data_, size_t size);
 
 ssize_t ssl_socket_receive_all_nonblocking(void *state_data, bool *error, void *data_, size_t size);

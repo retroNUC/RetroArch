@@ -8,21 +8,14 @@
          "name": "(gdb) Launch",
          "type": "cppdbg",
          "request": "launch",
-         "program": "${workspaceFolder}/retroarch.exe",
+         "program": "${workspaceFolder}\\output_retroarch\\retroarch.exe",
          "args": ["-v"],
-         "stopAtEntry": false,
+         "stopAtEntry": true,
          "cwd": "${workspaceFolder}",
          "environment": [],
          "externalConsole": true,
          "MIMode": "gdb",
-         "miDebuggerPath": "c:\\msys64\\mingw64\\bin\\gdb.exe",
-         "setupCommands": [
-             {
-                 "description": "Enable pretty-printing for gdb",
-                 "text": "-enable-pretty-printing",
-                 "ignoreFailures": true
-             }
-         ]
+         "miDebuggerPath": "c:\\tools\\msys64\\mingw64\\bin\\gdb.exe"
       },
       {
          "name": "(gdb) Attach",
@@ -31,7 +24,7 @@
          "program": "${workspaceFolder}/retroarch.exe",
          "processId": "${command:pickProcess}",
          "MIMode": "gdb",
-         "miDebuggerPath": "c:\\msys64\\mingw64\\bin\\gdb.exe",
+         "miDebuggerPath": "c:\\tools\\msys64\\mingw64\\bin\\gdb.exe",
          "setupCommands": [
              {
                  "description": "Enable pretty-printing for gdb",

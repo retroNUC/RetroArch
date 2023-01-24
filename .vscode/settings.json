@@ -37,7 +37,12 @@
       "xiosbase": "c",
       "xstring": "c",
       "xtree": "c",
-      "xutility": "c"
+      "xutility": "c",
+      "*.inc": "c",
+      "*.tcc": "c",
+      "istream": "c",
+      "numeric": "c",
+      "ostream": "c"
    },
    "C_Cpp.dimInactiveRegions": false,
 }

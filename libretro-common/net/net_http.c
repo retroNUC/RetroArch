@@ -55,9 +55,9 @@ enum
 
 struct http_socket_state_t
 {
-   void *ssl_ctx;
-   int fd;
-   bool ssl;
+   void *ssl_ctx; /* struct ssl_state, set from ssl_socket_init */
+   int fd;        /* file descriptor from successful connection */
+   bool ssl;      /* set from net_http_connection_new if url starts with "https://" */
 };
 
 struct http_t
@@ -460,6 +460,47 @@ static int net_http_new_socket(struct http_connection_t *conn)
 #ifdef HAVE_SSL
 done:
 #endif
+   if (addr)
+      freeaddrinfo_retro(addr);
+
+   conn->sock_state.fd = fd;
+
+   return fd;
+}
+
+static int net_http_new_socket_fixed(struct http_connection_t* conn)
+{
+   struct addrinfo* addr = NULL, * next_addr = NULL;
+   int fd = socket_init(
+      (void**)&addr, conn->port, conn->domain, SOCKET_TYPE_STREAM, 0);
+
+   /* keep cycling through addrinfo, whether ssl or regular connection */
+   for (next_addr = addr; fd >= 0; fd = socket_next((void**)&next_addr))
+   {
+#ifdef HAVE_SSL
+      if (conn->sock_state.ssl)
+      {
+         if (!(conn->sock_state.ssl_ctx = ssl_socket_init(fd, conn->domain)))
+         {
+            socket_close(fd);
+            continue;
+         }
+
+         if (ssl_socket_connect(conn->sock_state.ssl_ctx, (void*)next_addr, true, false) >= 0)
+            break;
+
+         ssl_socket_close(conn->sock_state.ssl_ctx); /* now closing this properly on failure */
+      }
+      else
+#endif
+      {
+         if (socket_connect_with_timeout(fd, (void*)next_addr, 5000)) /* This used to be 4000ms */
+            break;                   /* Previously relied on a manual socket_nonblock call here */
+
+         socket_close(fd);
+      }
+   }
+
    if (addr)
       freeaddrinfo_retro(addr);
 
@@ -1199,7 +1240,10 @@ void net_http_delete(struct http_t *state)
 
    if (state->sock_state.fd >= 0)
    {
+      RARCH_LOG("[SOCKET][%i][net_http_delete] Calling socket_close\n", state->sock_state.fd);
       socket_close(state->sock_state.fd);
+      RARCH_LOG("[SOCKET][%i][net_http_delete] socket_close done (and thread?)\n", state->sock_state.fd);
+
 #ifdef HAVE_SSL
       if (state->sock_state.ssl && state->sock_state.ssl_ctx)
       {

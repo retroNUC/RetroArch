@@ -32,6 +32,8 @@
 
 #include <net/net_socket.h>
 
+#include "verbosity.h"
+
 int socket_init(void **address, uint16_t port, const char *server,
       enum socket_type type, int family)
 {
@@ -39,6 +41,8 @@ int socket_init(void **address, uint16_t port, const char *server,
    struct addrinfo hints      = {0};
    struct addrinfo **addrinfo = (struct addrinfo**)address;
    struct addrinfo *addr      = NULL;
+
+   RARCH_LOG("[SOCKET] socket_init start\n");
 
    if (!family)
 #if defined(HAVE_SOCKET_LEGACY) || defined(WIIU)
@@ -58,6 +62,7 @@ int socket_init(void **address, uint16_t port, const char *server,
          hints.ai_socktype = SOCK_STREAM;
          break;
       default:
+         RARCH_LOG("[SOCKET] socket_init failed\n");
          return -1;
    }
 
@@ -65,19 +70,30 @@ int socket_init(void **address, uint16_t port, const char *server,
       hints.ai_flags = AI_PASSIVE;
 
    if (!network_init())
+   {
+      RARCH_LOG("[SOCKET] socket_init failed\n");
       return -1;
+   }
 
    snprintf(port_buf, sizeof(port_buf), "%hu", (unsigned short)port);
    hints.ai_flags |= AI_NUMERICSERV;
 
    if (getaddrinfo_retro(server, port_buf, &hints, addrinfo))
+   {
+      RARCH_LOG("[SOCKET] socket_init failed\n");
       return -1;
+   }
 
    addr = *addrinfo;
    if (!addr)
+   {
+      RARCH_LOG("[SOCKET] socket_init failed\n");
       return -1;
+   }
 
-   return socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+   int fd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+   RARCH_LOG("[SOCKET][%i] socket_init success\n", fd);
+   return fd; 
 }
 
 int socket_next(void **address)
@@ -85,9 +101,16 @@ int socket_next(void **address)
    struct addrinfo **addrinfo = (struct addrinfo**)address;
    struct addrinfo *addr      = *addrinfo;
 
-   if ((*addrinfo = addr = addr->ai_next))
-      return socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+   RARCH_LOG("[SOCKET] socket_next start\n");
 
+   if ((*addrinfo = addr = addr->ai_next))
+   {
+      int fd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+      RARCH_LOG("[SOCKET][%i] socket_init success\n", fd);
+      return fd;
+   }
+
+   RARCH_LOG("[SOCKET] socket_next failed\n");
    return -1;
 }
 
@@ -209,6 +232,7 @@ bool socket_nonblock(int fd)
 
 int socket_close(int fd)
 {
+   RARCH_LOG("[SOCKET][%i] socket_close\n", fd);
 #if defined(_WIN32) && !defined(_XBOX360)
    /* WinSock has headers from the stone age. */
    return closesocket(fd);
@@ -375,7 +399,10 @@ done:
 int socket_poll(struct pollfd *fds, unsigned nfds, int timeout)
 {
 #if defined(_WIN32)
-   return WSAPoll(fds, nfds, timeout);
+   RARCH_LOG("[SOCKET][%i][socket_poll] Starting WSAPoll\n", fds->fd);
+   int res = WSAPoll(fds, nfds, timeout);
+   RARCH_LOG("[SOCKET][%i][socket_poll] WSAPoll returned with %i\n", fds->fd, res);
+   return res;
 #elif defined(VITA)
    int i, j;
    int epoll_fd;
@@ -687,8 +714,38 @@ bool socket_bind(int fd, void *data)
    return !bind(fd, addr->ai_addr, addr->ai_addrlen);
 }
 
-int socket_connect(int fd, void *data)
+int socket_connect(int fd, void *data /*, bool timeout_enable) */ )
 {
+/* WHAT LANDED HERE BEFORE CHANGE?
+ *    network_gfx.c           network_gfx_init()         TRUE
+ *    net_http.c              net_http_new_socket()      TRUE     Only #ifndef HAVE_SSL, otherwise goes via ssl_socket_connect().
+ *                                                                Marks as non-blocking via socket_nonblock() straight after.
+ *    net_socket_ssl_bear.c   ssl_socket_connect()       VAR      Passes down timeout param. Has a "bool nonblock" param that's not used?)
+ *    net_socket_ssl_mbed.c   ssl_socket_connect()       VAR      Passes down timeout param. Has a "bool nonblock" param that's not used?)
+ *    netplay_frontend.c      netplay_tunnel_connect()   FALSE    Marks as non-blocking before connecting via socket_nonblock().
+ *    ranetplayer.c           main()                     FALSE    Connection to netplay server
+ *
+ *    Two SSL implementations:
+ *    - MBED - HAVE_BUILTINMBEDTLS - Seems to be the one included via MSVC?
+ *    - BEAR - Linux only?
+ */
+
+ /* ...AND AFTER CHANGE/LATEST?
+  *    network_gfx.c           network_gfx_init()         n/a      Goes to SOCKET_CONNECT_WITH_TIMEOUT instead, 5000ms.
+  *                                                                Then also manually blocks socket via socket_set_block() *NEW FUNC WITH PLATFORM CONTROL*
+  * 
+  *    net_http.c              net_http_new_socket()      TRUE     Goes to SOCKET_CONNECT_WITH_TIMEOUT instead, 5000ms.
+  *                                                                SSL    - Still goes via ssl_socket_connect()
+  *                                                                NonSSL - No longer calls socket_nonblock, as it's done inside SOCKET_CONNECT_WITH_TIMEOUT
+  * 
+  *    net_socket_ssl_bear.c   ssl_socket_connect()       VAR      Passes down timeout param. Has a "bool nonblock" param that's not used?
+  * 
+  *    net_socket_ssl_mbed.c   ssl_socket_connect()       VAR      Passes down timeout param. Has a "bool nonblock" param that's not used?
+  *
+  *    netplay_frontend.c      netplay_tunnel_connect()   FALSE    Marks as non-blocking before connecting via socket_nonblock().
+  *    ranetplayer.c           main()                     FALSE    Connection to netplay server
+  */
+
    struct addrinfo *addr = (struct addrinfo*)data;
 
 #ifdef WIIU
@@ -710,7 +767,10 @@ int socket_connect(int fd, void *data)
    }
 #endif
 
-   return connect(fd, addr->ai_addr, addr->ai_addrlen);
+   RARCH_LOG("[SOCKET][%i][socket_connect] Connecting (should spawn a new thread) \n", fd);
+   int res = connect(fd, addr->ai_addr, addr->ai_addrlen);
+   RARCH_LOG("[SOCKET][%i][socket_connect] Connected!\n", fd);
+   return res;
 }
 
 bool socket_connect_with_timeout(int fd, void *data, int timeout)
@@ -740,12 +800,14 @@ bool socket_connect_with_timeout(int fd, void *data, int timeout)
    }
 #endif
 
+   RARCH_LOG("[SOCKET][%i][socket_connect_with_timeout] Connecting (should spawn a new thread) \n", fd);
    res = connect(fd, addr->ai_addr, addr->ai_addrlen);
-   if (res)
+   RARCH_LOG("[SOCKET][%i][socket_connect_with_timeout] Connected!\n", fd);
+   if (res) /* connection returned error */
    {
       bool ready = true;
 
-      if (!isinprogress(res) && !isagain(res))
+      if (!isinprogress(res) && !isagain(res)) /* error was WSAEWOULDBLOCK */
          return false;
 
       if (timeout <= 0)

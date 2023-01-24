@@ -32,6 +32,8 @@
 #include <rthreads/rthreads.h>
 #endif
 
+#include "verbosity.h"
+
 typedef struct
 {
    retro_task_t *front;
@@ -177,14 +179,39 @@ static retro_task_t *task_queue_get(task_queue_t *queue)
 static void retro_task_internal_gather(void)
 {
    retro_task_t *task = NULL;
+
+   /* THREADING NOTES? 
+         bool task_push_start_dummy_core()
+         > retroarch_init_task_queue()
+          > task_queue_init()
+            > retro_task_threaded_init()
+              > sthread_create [rthreads.c]
+                 > CreateThread [WIN32]
+
+      sthread_t* thread
+      thread_data* data (stores params)
+      thread->thread is return from CreateThread [WIN32]
+   */
+
+   /* pops task pointer off the "finished" queue 
+      "running" to "finished" in threaded_worker() if task->finished 
+      task->finished set from task_set_finished()
+      HTTP sets this in task->handler (task_http_transfer_handler), but also...
+         rcheevos_start_session_async
+         rcheevos_validate_initial_disc_handler
+         rcheevos_async_retry_request
+         rcheevos_async_ping_handler
+         rcheevos_async_write_badge
+   */
    while ((task = task_queue_get(&tasks_finished)))
    {
+      /* calls task->progress_cb (http_transfer_progress_cb) */
       task_queue_push_progress(task);
 
-      if (task->callback)
+      if (task->callback)  /* rcheevos_async_fetch_user_unlocks_callback */
          task->callback(task, task->task_data, task->user_data, task->error);
 
-      if (task->cleanup)
+      if (task->cleanup)   /* task_http_transfer_cleanup */
           task->cleanup(task);
 
       if (task->error)
@@ -193,7 +220,8 @@ static void retro_task_internal_gather(void)
       if (task->title)
          free(task->title);
 
-      free(task);
+      free(task); /* task_push_http_transfer_generic
+                     (malloc via task_init)          */
    }
 }
 
@@ -678,6 +706,8 @@ void task_queue_check(void)
 
 bool task_queue_push(retro_task_t *task)
 {
+   RARCH_LOG("[TASKS]pushing new task onto queue: callback %p\n", task->callback);
+
    /* Ignore this task if a related one is already running */
    if (task->type == TASK_TYPE_BLOCKING)
    {

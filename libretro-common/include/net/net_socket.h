@@ -101,10 +101,33 @@ ssize_t socket_receive_all_nonblocking(int fd, bool *error,
 
 bool socket_bind(int fd, void *data);
 
+/**
+ * Connect to a network socket.
+ * 
+ * @param fd - File descriptor returned from successful socket() call in
+ *             socket_init/_next/_create.
+ * @param data - Pointer to struct addrinfo with params for connect() call.
+ * @return Return value from connect() call. 0 if success, -1 (SOCKET_ERROR) if
+ *    failed.
+ **/
 int socket_connect(int fd, void *data);
 
+/**
+ * Connect to a network socket, defining a timeout. If initial attempt was not
+ * successful, will socket_wait/socket_poll until 
+ * 
+ * @param fd - File descriptor returned from successful socket() call in
+ *             socket_init/_next/_create.
+ * @param data - Pointer to struct addrinfo with params for connect() call.
+ * @param timeout - How long (ms) to wait/poll 
+ * @return If successful.
+ **/
 bool socket_connect_with_timeout(int fd, void *data, int timeout);
 
+
+/**
+ * Wrapper function for socket()
+ **/
 int socket_create(
       const char *name,
       enum socket_domain domain_type,
